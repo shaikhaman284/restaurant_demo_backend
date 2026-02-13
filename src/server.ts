@@ -29,6 +29,7 @@ app.use(cors({
         'http://localhost:5173',
         'http://localhost:5174',
         config.frontendUrl, // Allow the deployed frontend
+        'https://restaurant-demo-frontend-2qh7.vercel.app', // Explicitly allow Vercel deployment
         'https://restaurant-demo-frontend-2qh7-neem2m1sw.vercel.app' // Hardcoded fallback just in case
     ],
     credentials: true,

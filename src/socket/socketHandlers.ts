@@ -5,7 +5,13 @@ import { config } from '../config';
 export const initializeSocket = (httpServer: HTTPServer) => {
     const io = new SocketIOServer(httpServer, {
         cors: {
-            origin: config.frontendUrl,
+            origin: [
+                config.frontendUrl,
+                'http://localhost:5173',
+                'http://localhost:5174',
+                'https://restaurant-demo-frontend-2qh7.vercel.app',
+                'https://restaurant-demo-frontend-2qh7-neem2m1sw.vercel.app'
+            ],
             methods: ['GET', 'POST'],
         },
     });
