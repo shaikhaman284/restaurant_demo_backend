@@ -66,7 +66,8 @@ const startServer = async () => {
         // Connect to Redis (optional)
         await connectRedis();
 
-        httpServer.listen(config.port, () => {
+        const port = Number(config.port);
+        httpServer.listen(port, '0.0.0.0', () => {
             console.log('🚀 Server started successfully!');
             console.log(`📍 Server running on http://localhost:${config.port}`);
             console.log(`🌍 Environment: ${config.nodeEnv}`);
