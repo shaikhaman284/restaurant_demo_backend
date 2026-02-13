@@ -1,4 +1,4 @@
-import { Response, NextFunction } from 'express';
+import { Response, NextFunction, Request } from 'express';
 import QRCode from 'qrcode';
 import prisma from '../config/database';
 import { AuthRequest } from '../middleware/auth';
@@ -22,8 +22,8 @@ export const getTables = async (req: AuthRequest, res: Response) => {
     }
 };
 
-// Get Single Table
-export const getTable = async (req: AuthRequest, res: Response) => {
+// Get Single Table (Protected)
+export const getTable = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
         const { id } = req.params;
 
@@ -53,7 +53,33 @@ export const getTable = async (req: AuthRequest, res: Response) => {
 
         res.json(table);
     } catch (error) {
-        throw error;
+        next(error);
+    }
+};
+
+// Get Public Table Info (Unprotected)
+export const getPublicTableInfo = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { id } = req.params;
+
+        const table = await prisma.table.findUnique({
+            where: { id },
+            select: {
+                id: true,
+                tableNumber: true,
+                restaurantId: true,
+                qrCode: true,
+                status: true,
+            }
+        });
+
+        if (!table) {
+            throw new AppError('Table not found', 404);
+        }
+
+        res.json(table);
+    } catch (error) {
+        next(error);
     }
 };
 

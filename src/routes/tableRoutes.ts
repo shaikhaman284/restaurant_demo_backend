@@ -2,6 +2,7 @@ import { Router } from 'express';
 import {
     getTables,
     getTable,
+    getPublicTableInfo,
     createTable,
     updateTable,
     deleteTable,
@@ -12,6 +13,10 @@ import { authenticate, authorize } from '../middleware/auth';
 
 const router = Router();
 
+// Public routes
+router.get('/public/:id', getPublicTableInfo);
+
+// Protected routes
 router.get('/restaurant/:restaurantId', authenticate, getTables);
 router.get('/:id', authenticate, getTable);
 router.post('/', authenticate, authorize('ADMIN', 'MANAGER'), createTable);
