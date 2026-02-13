@@ -25,7 +25,12 @@ setSocketInstance(io);
 
 // Middleware
 app.use(cors({
-    origin: ['http://localhost:5173', 'http://localhost:5174'],
+    origin: [
+        'http://localhost:5173',
+        'http://localhost:5174',
+        config.frontendUrl, // Allow the deployed frontend
+        'https://restaurant-demo-frontend-2qh7-neem2m1sw.vercel.app' // Hardcoded fallback just in case
+    ],
     credentials: true,
 }));
 app.use(express.json());
