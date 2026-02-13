@@ -14,72 +14,52 @@ async function main() {
     console.log('🌱 Starting database seed...');
 
     // Create Restaurant
-    const restaurant = await prisma.restaurant.create({
-        data: {
-            name: 'Fuel Headquarters',
-            logo: '/logo.png',
-            gstNumber: '29ABCDE1234F1Z5',
-            fssaiNumber: '12345678901234',
-            address: '123 Main Street, Bangalore, Karnataka 560001',
-            phone: '+91 9876543210',
-            email: 'contact@fuelheadquarters.com',
-        },
+    let restaurant = await prisma.restaurant.findFirst({
+        where: { email: 'contact@fuelheadquarters.com' }
     });
 
-    console.log('✅ Created restaurant:', restaurant.name);
+    if (!restaurant) {
+        restaurant = await prisma.restaurant.create({
+            data: {
+                name: 'Fuel Headquarters',
+                logo: '/logo.png',
+                gstNumber: '29ABCDE1234F1Z5',
+                fssaiNumber: '12345678901234',
+                address: '123 Main Street, Bangalore, Karnataka 560001',
+                phone: '+91 9876543210',
+                email: 'contact@fuelheadquarters.com',
+            },
+        });
+        console.log('✅ Created restaurant:', restaurant.name);
+    } else {
+        console.log('ℹ️ Restaurant already exists:', restaurant.name);
+    }
 
     // Create Staff Members
     const hashedPassword = await bcrypt.hash('admin123', 10);
+    const staffData = [
+        { name: 'Admin User', email: 'admin@fuelheadquarters.com', role: StaffRole.ADMIN },
+        { name: 'Manager User', email: 'manager@fuelheadquarters.com', role: StaffRole.MANAGER },
+        { name: 'Waiter User', email: 'waiter@fuelheadquarters.com', role: StaffRole.WAITER },
+        { name: 'Cashier User', email: 'cashier@fuelheadquarters.com', role: StaffRole.CASHIER },
+        { name: 'Kitchen User', email: 'kitchen@fuelheadquarters.com', role: StaffRole.KITCHEN },
+    ];
 
-    const staff = await Promise.all([
-        prisma.staff.create({
-            data: {
+    for (const s of staffData) {
+        await prisma.staff.upsert({
+            where: { email: s.email },
+            update: {},
+            create: {
                 restaurantId: restaurant.id,
-                name: 'Admin User',
-                email: 'admin@fuelheadquarters.com',
+                name: s.name,
+                email: s.email,
                 password: hashedPassword,
-                role: StaffRole.ADMIN,
+                role: s.role,
             },
-        }),
-        prisma.staff.create({
-            data: {
-                restaurantId: restaurant.id,
-                name: 'Manager User',
-                email: 'manager@fuelheadquarters.com',
-                password: await bcrypt.hash('manager123', 10),
-                role: StaffRole.MANAGER,
-            },
-        }),
-        prisma.staff.create({
-            data: {
-                restaurantId: restaurant.id,
-                name: 'Waiter User',
-                email: 'waiter@fuelheadquarters.com',
-                password: await bcrypt.hash('waiter123', 10),
-                role: StaffRole.WAITER,
-            },
-        }),
-        prisma.staff.create({
-            data: {
-                restaurantId: restaurant.id,
-                name: 'Cashier User',
-                email: 'cashier@fuelheadquarters.com',
-                password: await bcrypt.hash('cashier123', 10),
-                role: StaffRole.CASHIER,
-            },
-        }),
-        prisma.staff.create({
-            data: {
-                restaurantId: restaurant.id,
-                name: 'Kitchen User',
-                email: 'kitchen@fuelheadquarters.com',
-                password: await bcrypt.hash('kitchen123', 10),
-                role: StaffRole.KITCHEN,
-            },
-        }),
-    ]);
+        });
+    }
 
-    console.log('✅ Created', staff.length, 'staff members');
+    console.log('✅ Verified staff members');
 
     // Create Tables
     const tableNames = [
@@ -93,28 +73,38 @@ async function main() {
         'SMO1', 'SMO2', 'SMO3', 'SMO4', 'SMO5',
     ];
 
-    const tables = [];
     for (const tableName of tableNames) {
-        const table = await prisma.table.create({
-            data: {
+        const qrCodeUrl = `${config.frontendUrl}/order/${restaurant.id}/placeholder-${tableName}`; // Placeholder, will update with ID
+
+        // First ensure table exists
+        const table = await prisma.table.upsert({
+            where: {
+                restaurantId_tableNumber: {
+                    restaurantId: restaurant.id,
+                    tableNumber: tableName,
+                }
+            },
+            update: {},
+            create: {
                 restaurantId: restaurant.id,
                 tableNumber: tableName,
-                qrCode: '', // Will update after creation
-                capacity: Math.floor(Math.random() * 4) + 2, // 2-6 capacity
+                qrCode: `temp-${tableName}`, // Temporary unique
+                capacity: Math.floor(Math.random() * 4) + 2,
                 status: TableStatus.AVAILABLE,
-            },
+            }
         });
 
-        const qrCode = await generateQRCode(restaurant.id, table.id);
+        // Generate real QR
+        const realUrl = `${config.frontendUrl}/order/${restaurant.id}/${table.id}`;
+        const qrCode = await QRCode.toDataURL(realUrl);
+
         await prisma.table.update({
             where: { id: table.id },
-            data: { qrCode },
+            data: { qrCode }
         });
-
-        tables.push(table);
     }
 
-    console.log('✅ Created', tables.length, 'tables with QR codes');
+    console.log('✅ Verified tables with QR codes');
 
     // Create Categories
     const categories = await Promise.all([
