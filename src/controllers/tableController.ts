@@ -1,9 +1,10 @@
-import { Response } from 'express';
+import { Response, NextFunction } from 'express';
 import QRCode from 'qrcode';
 import prisma from '../config/database';
 import { AuthRequest } from '../middleware/auth';
 import { AppError } from '../middleware/errorHandler';
 import { TableStatus } from '@prisma/client';
+import { config } from '../config';
 
 // Get All Tables for Restaurant
 export const getTables = async (req: AuthRequest, res: Response) => {
@@ -57,7 +58,7 @@ export const getTable = async (req: AuthRequest, res: Response) => {
 };
 
 // Create Table
-export const createTable = async (req: AuthRequest, res: Response) => {
+export const createTable = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
         const { restaurantId, tableNumber, capacity } = req.body;
 
@@ -76,7 +77,7 @@ export const createTable = async (req: AuthRequest, res: Response) => {
         });
 
         // Generate QR code
-        const url = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/order/${restaurantId}/${table.id}`;
+        const url = `${config.frontendUrl}/order/${restaurantId}/${table.id}`;
         const qrCode = await QRCode.toDataURL(url);
 
         // Update table with QR code
@@ -87,7 +88,7 @@ export const createTable = async (req: AuthRequest, res: Response) => {
 
         res.status(201).json(updatedTable);
     } catch (error) {
-        throw error;
+        next(error);
     }
 };
 

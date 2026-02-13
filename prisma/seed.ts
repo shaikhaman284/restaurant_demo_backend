@@ -1,11 +1,12 @@
 import { PrismaClient, DietaryType, StaffRole, TableStatus } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import QRCode from 'qrcode';
+import { config } from '../src/config';
 
 const prisma = new PrismaClient();
 
 async function generateQRCode(restaurantId: string, tableId: string): Promise<string> {
-    const url = `http://localhost:5173/order/${restaurantId}/${tableId}`;
+    const url = `${config.frontendUrl}/order/${restaurantId}/${tableId}`;
     return await QRCode.toDataURL(url);
 }
 
