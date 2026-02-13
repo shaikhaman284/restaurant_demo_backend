@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import bcrypt from 'bcryptjs';
 import prisma from '../config/database';
 import { generateToken } from '../utils/jwt';
@@ -7,7 +7,7 @@ import { AppError } from '../middleware/errorHandler';
 import { config } from '../config';
 
 // Staff Login
-export const staffLogin = async (req: Request, res: Response) => {
+export const staffLogin = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { email, password } = req.body;
 
@@ -62,12 +62,12 @@ export const staffLogin = async (req: Request, res: Response) => {
             },
         });
     } catch (error) {
-        throw error;
+        next(error);
     }
 };
 
 // Request OTP for Customer
-export const requestOTP = async (req: Request, res: Response) => {
+export const requestOTP = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { phone, name } = req.body;
 
@@ -110,12 +110,12 @@ export const requestOTP = async (req: Request, res: Response) => {
             otp: otp, // DEMO ONLY - Remove in production
         });
     } catch (error) {
-        throw error;
+        next(error);
     }
 };
 
 // Verify OTP and Create Session
-export const verifyOTP = async (req: Request, res: Response) => {
+export const verifyOTP = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { phone, name, otp, tableId } = req.body;
 
@@ -190,12 +190,12 @@ export const verifyOTP = async (req: Request, res: Response) => {
             },
         });
     } catch (error) {
-        throw error;
+        next(error);
     }
 };
 
 // Verify Customer Session
-export const verifySession = async (req: Request, res: Response) => {
+export const verifySession = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { sessionToken } = req.body;
 
@@ -225,12 +225,12 @@ export const verifySession = async (req: Request, res: Response) => {
             tableId: session.tableId,
         });
     } catch (error) {
-        throw error;
+        next(error);
     }
 };
 
 // Customer Logout
-export const customerLogout = async (req: Request, res: Response) => {
+export const customerLogout = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { sessionToken } = req.body;
 
@@ -242,6 +242,6 @@ export const customerLogout = async (req: Request, res: Response) => {
 
         res.json({ message: 'Logged out successfully' });
     } catch (error) {
-        throw error;
+        next(error);
     }
 };

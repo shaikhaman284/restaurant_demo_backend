@@ -1,10 +1,10 @@
-import { Response } from 'express';
+import { Response, NextFunction } from 'express';
 import prisma from '../config/database';
 import { AuthRequest } from '../middleware/auth';
 import { AppError } from '../middleware/errorHandler';
 
 // Get Restaurant Details
-export const getRestaurant = async (req: AuthRequest, res: Response) => {
+export const getRestaurant = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
         const { id } = req.params;
 
@@ -18,12 +18,12 @@ export const getRestaurant = async (req: AuthRequest, res: Response) => {
 
         res.json(restaurant);
     } catch (error) {
-        throw error;
+        next(error);
     }
 };
 
 // Update Restaurant
-export const updateRestaurant = async (req: AuthRequest, res: Response) => {
+export const updateRestaurant = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
         const { id } = req.params;
         const data = req.body;
@@ -35,6 +35,6 @@ export const updateRestaurant = async (req: AuthRequest, res: Response) => {
 
         res.json(restaurant);
     } catch (error) {
-        throw error;
+        next(error);
     }
 };

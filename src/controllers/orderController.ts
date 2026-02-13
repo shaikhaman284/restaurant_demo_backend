@@ -1,11 +1,11 @@
-import { Response } from 'express';
+import { Response, NextFunction } from 'express';
 import prisma from '../config/database';
 import { AuthRequest } from '../middleware/auth';
 import { AppError } from '../middleware/errorHandler';
 import { OrderStatus, PaymentStatus } from '@prisma/client';
 
 // Place Order (Customer)
-export const placeOrder = async (req: AuthRequest, res: Response) => {
+export const placeOrder = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
         const {
             restaurantId,
@@ -125,12 +125,12 @@ export const placeOrder = async (req: AuthRequest, res: Response) => {
 
         res.status(201).json(responseOrder);
     } catch (error) {
-        throw error;
+        next(error);
     }
 };
 
 // Get Order Details
-export const getOrder = async (req: AuthRequest, res: Response) => {
+export const getOrder = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
         const { id } = req.params;
 
@@ -163,12 +163,12 @@ export const getOrder = async (req: AuthRequest, res: Response) => {
 
         res.json(responseOrder);
     } catch (error) {
-        throw error;
+        next(error);
     }
 };
 
 // Get Orders for Table
-export const getTableOrders = async (req: AuthRequest, res: Response) => {
+export const getTableOrders = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
         const { tableId } = req.params;
 
@@ -199,12 +199,12 @@ export const getTableOrders = async (req: AuthRequest, res: Response) => {
 
         res.json(responseOrders);
     } catch (error) {
-        throw error;
+        next(error);
     }
 };
 
 // Get Active Orders for Restaurant
-export const getActiveOrders = async (req: AuthRequest, res: Response) => {
+export const getActiveOrders = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
         const { restaurantId } = req.params;
 
@@ -237,12 +237,12 @@ export const getActiveOrders = async (req: AuthRequest, res: Response) => {
 
         res.json(responseOrders);
     } catch (error) {
-        throw error;
+        next(error);
     }
 };
 
 // Update Order Status
-export const updateOrderStatus = async (req: AuthRequest, res: Response) => {
+export const updateOrderStatus = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
         const { id } = req.params;
         const { status } = req.body;
@@ -271,12 +271,12 @@ export const updateOrderStatus = async (req: AuthRequest, res: Response) => {
 
         res.json(responseOrder);
     } catch (error) {
-        throw error;
+        next(error);
     }
 };
 
 // Get Order History (with filters)
-export const getOrderHistory = async (req: AuthRequest, res: Response) => {
+export const getOrderHistory = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
         const { restaurantId } = req.params;
         const { status, paymentStatus, page = 1, limit = 10, startDate, endDate } = req.query;
@@ -345,6 +345,6 @@ export const getOrderHistory = async (req: AuthRequest, res: Response) => {
             },
         });
     } catch (error) {
-        throw error;
+        next(error);
     }
 };
